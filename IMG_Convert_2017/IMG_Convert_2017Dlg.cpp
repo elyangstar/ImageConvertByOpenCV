@@ -279,10 +279,46 @@ void CIMGConvert2017Dlg::DrawImageTemplate()
 }
 void CIMGConvert2017Dlg::OnBnClickedImgMatFacedetect()
 {
+	Mat frame;
+	VideoCapture cap;
+	CClientDC dc(GetDlgItem(IDC_PIC_IMG));
+	CRect rect;
+
 	//얼굴 인식 사진한장만 해보자.
 	face_cascade.load("./Xml/haarcascade_frontalface_alt2.xml");
 
-	detectAndDisplay(m_matImage);
+
+	cap.open(0);              // by default use webcam
+	while (cap.isOpened() && cap.read(frame))
+	{
+		//2번 Row 참고(바로 아래)
+		CreateBitmapInfo(frame.cols, frame.rows, frame.channels() * 8);
+		//
+		// process frame as you wish..
+		if (waitKey(10) == 27) break;
+
+		detectAndDisplay(frame);
+
+		GetDlgItem(IDC_PIC_IMG)->GetClientRect(&rect);
+		SetStretchBltMode(dc.GetSafeHdc(), COLORONCOLOR);
+		StretchDIBits(dc.GetSafeHdc(), 0, 0, rect.Width(), rect.Height(), 0, 0, frame.cols, frame.rows, frame.data, m_pBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+	}
+
+
+	
+}
+
+void CIMGConvert2017Dlg::WriteSizeFile(int nwidth , int height)
+{
+	CString strpath = "../file/size.txt";
+	FILE *file = fopen(strpath, "a");
+	if (file)
+	{
+		//YEY - 180616 레시피에 따른 공정 라인명이 별도로 필요 하기 때문에 추가.
+		fprintf(file, "%n,%n,\n", nwidth, height);    //1. file format
+		fclose(file);
+	}
+
 }
 
 void CIMGConvert2017Dlg::OnBnClickedLoadVideo()
@@ -318,7 +354,7 @@ void CIMGConvert2017Dlg::OnBnClickedLoadVideo()
 		
 
 		detectAndDisplay(img);
-		//FaceDetect(img);
+		imshow("camera img", img);
 		if (waitKey(25) == 27)
 			break;
 	}
@@ -328,6 +364,7 @@ void CIMGConvert2017Dlg::detectAndDisplay(Mat frame)
 {
 	std::vector<Rect> faces;
 	Mat frame_gray;
+	char mytext[30];
 
 	cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
 	equalizeHist(frame_gray, frame_gray);
@@ -336,14 +373,23 @@ void CIMGConvert2017Dlg::detectAndDisplay(Mat frame)
 
 	for (size_t i = 0; i < faces.size(); i++)
 	{
+		if (faces[i].width < 200 && faces[i].height < 200)
+			continue;
+
 		Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
-		rectangle(frame, faces[i],  Scalar(100 * (i - 2), 255, 255 * i), 3, 4, 0);
+/*		rectangle(frame, faces[i],  Scalar(100 * (i - 2), 255, 255 * i), 3, 4, 0);*/
 
  		ellipse(frame, center, Size(faces[i].width / 2, faces[i].height / 2),
 			0, 0, 360, Scalar(0, 0, 255), 4, 8, 0);
+
+		TRACE("%d , %d \n", faces[i].width, faces[i].height);
+		//WriteSizeFile(faces[i].width, faces[i].height);
+
+		sprintf_s(mytext, "face");
+		putText(frame, mytext, Point(100, 100), 1, 2, Scalar(0, 0, 255), 1);
 	}
 
-	imshow("camera img", frame);
+	
 }
 
 void CIMGConvert2017Dlg::FaceDetect(Mat frame)

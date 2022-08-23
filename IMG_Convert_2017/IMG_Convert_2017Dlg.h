@@ -70,4 +70,6 @@ public:
 
 
 	afx_msg void OnBnClickedImgMatFacedetect();
+
+	void WriteSizeFile(int nwidth, int height);
 };
