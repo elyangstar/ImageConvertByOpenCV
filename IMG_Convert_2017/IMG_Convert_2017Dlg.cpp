@@ -298,7 +298,7 @@ void CIMGConvert2017Dlg::OnBnClickedImgMatFacedetect()
 		if (waitKey(10) == 27) break;
 
 		detectAndDisplay(frame);
-
+		RealTimeMatchingPercent(frame);
 		GetDlgItem(IDC_PIC_IMG)->GetClientRect(&rect);
 		SetStretchBltMode(dc.GetSafeHdc(), COLORONCOLOR);
 		StretchDIBits(dc.GetSafeHdc(), 0, 0, rect.Width(), rect.Height(), 0, 0, frame.cols, frame.rows, frame.data, m_pBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
@@ -492,6 +492,58 @@ void CIMGConvert2017Dlg::Match()
 		circle(result, matchLoc, 3, Scalar(0, 0, 255), 1);
 
 		imshow("src", m_matImage);
+
+		waitKey(0);
+
+	}
+}
+// 실시간영상에서 매칭 시도하여 매칭되는곳 사각형 처리./ 나중에는 퍼센트로 안맞으면 날려야 할듯.
+void CIMGConvert2017Dlg::RealTimeMatchingPercent(Mat Frame)
+{
+	Mat result;
+	double minVal, maxVal;
+	Point minLoc, maxLoc;
+	Point matchLoc;
+
+	if (m_matTemplateImage.data ==NULL)
+		return;
+
+	//for (int i = 0; i < 6; i++)
+	{
+
+		//int Matching_method = i;
+		/*
+		0: TM_SQDIFF
+		1: TM_SQDIFF NORMED
+		2: TM CCORR
+		3: TM CCORR NORMED
+		4: TM COEFF
+		5: TM COEFF NORMED";
+		*/
+
+		matchTemplate(Frame, m_matTemplateImage, result, TM_SQDIFF);
+		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
+		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+
+		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
+		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+		matchLoc = minLoc;
+
+		// 		if (Matching_method == 0 || Matching_method == 1)
+		// 		{
+		// 			matchLoc = minLoc;
+		// 		}
+		// 		else
+		// 			matchLoc = maxLoc;
+
+
+
+		rectangle(Frame, matchLoc, Point(matchLoc.x + m_matTemplateImage.cols, matchLoc.y + m_matTemplateImage.rows), Scalar(0, 0, 255), 1);
+
+		cvtColor(result, result, COLOR_GRAY2BGR);
+		circle(result, matchLoc, 3, Scalar(0, 0, 255), 1);
+
+		//imshow("src", m_matImage);
 
 		waitKey(0);
 

@@ -63,6 +63,7 @@ public:
 	//기능 관련
 	void detectAndDisplay(Mat frame);			//찾아서 출력하기
 	void Match();								//영역 매칭
+	void RealTimeMatchingPercent(Mat Frame);
 	void FaceDetect(Mat frame);					//얼굴 찾기
 	void setLabel(Mat& image, string str, vector<Point> contour);		//이미지에 글자 쓰기
 	
