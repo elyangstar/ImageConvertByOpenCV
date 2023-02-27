@@ -73,4 +73,7 @@ public:
 	afx_msg void OnBnClickedImgMatFacedetect();
 
 	void WriteSizeFile(int nwidth, int height);
+	afx_msg void OnBnClickedCheckFingerDetect();
+	afx_msg void OnBnClickedCheckFingerDetect2();
+	void detectHand(Mat& frame, CascadeClassifier& cascade);
 };
