@@ -521,7 +521,7 @@ void CIMGConvert2017Dlg::RealTimeMatchingPercent(Mat Frame)
 		5: TM COEFF NORMED";
 		*/
 
-		matchTemplate(Frame, m_matTemplateImage, result, TM_SQDIFF);
+		matchTemplate(Frame, m_matTemplateImage, result, TM_SQDIFF_NORMED);
 		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
 		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
 
